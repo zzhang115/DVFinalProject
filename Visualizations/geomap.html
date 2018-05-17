@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+  .names {
+  fill: none;
+  stroke: #fff;
+  stroke-linejoin: round;
+  }
+
+    /* Tooltip CSS */
+    .d3-tip {
+    line-height: 1.5;
+    font-weight: 400;
+    font-family:"avenir next", Arial, sans-serif;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #66ccff;
+    border-radius: 1px;
+    pointer-events: none;
+    }
+
+    /* Creates a small triangle extender for the tooltip */
+    .d3-tip:after {      
+      box-sizing: border-box;
+      display: inline;
+      font-size: 8px;
+      width: 100%;
+      line-height: 1.5;
+      color: rgba(0, 0, 0, 0.6);
+      position: absolute;
+      pointer-events: none;
+      
+    }
+
+    /* Northward tooltips */
+    .d3-tip.n:after {
+      content: "\25BC";
+      margin: -1px 0 0 0;
+      top: 100%;
+      left: 0;
+      text-align: center;
+    }
+
+    /* Eastward tooltips */
+    .d3-tip.e:after {
+      content: "\25C0";
+      margin: -4px 0 0 0;
+      top: 50%;
+      left: -8px;
+    }
+
+    /* Southward tooltips */
+    .d3-tip.s:after {
+      content: "\25B2";
+      margin: 0 0 1px 0;
+      top: -80px;
+      left: 0;
+      text-align: center;
+    }
+
+    /* Westward tooltips */
+    .d3-tip.w:after {
+      content: "\25B6";
+      margin: -4px 0 0 -1px;
+      top: 50%;
+      left: 100%;
+    }
+
+/*    text{
+      pointer-events:none;
+    }*/
+
+    .details{
+      color:white;
+    }
+  input {
+      height: 30px;
+      width: 300px;
+      /* horizontal*/
+      -webkit-appearance: slider-horizontal;
+  }
+
+</style>
+<body>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/queue.v1.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="d3-tip.js"></script>
+<p><input id="slider" type="range" min="2000" max="2013" step="1" value="0" orient="horizontal" list="ticks" width=50 onchange="updateTextOutput(this.value);"></p>
+<p><output type="text" id="threshold_val" value=""></output>
+<output type="number" id="textOutput" value=""></output></p>
+<datalist id="ticks">
+    <option>2000</option>
+    <option>2001</option>
+    <option>2002</option>
+    <option>2003</option>
+    <option>2004</option>
+    <option>2005</option>
+    <option>2006</option>
+    <option>2007</option>
+    <option>2008</option>
+    <option>2009</option>
+    <option>2010</option>
+    <option>2011</option>
+    <option>2012</option>
+    <option>2013</option>
+</datalist>
+<script>
+var format = d3.format(",");
+
+// Set tooltips
+var tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function(d) {
+                if (threshold == "2000") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2000"]) +"</span>";
+                } else if (threshold == "2001") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2001"]) +"</span>";
+                } else if (threshold == "2002") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2002"]) +"</span>";   
+                  } else if (threshold == "2003") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2003"]) +"</span>";
+                  } else if (threshold == "2004") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2004"]) +"</span>";    
+                  } else if (threshold == "2005") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2005"]) +"</span>";    
+                  } else if (threshold == "2006") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2006"]) +"</span>";  
+                  } else if (threshold == "2007") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2007"]) +"</span>";  
+                  } else if (threshold == "2008") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2008"]) +"</span>";  
+                  } else if (threshold == "2009") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2009"]) +"</span>";   
+                  } else if (threshold == "2010") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2010"]) +"</span>";    
+                  } else if (threshold == "2011") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2011"]) +"</span>";    
+                  } else if (threshold == "2012") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2012"]) +"</span>";     
+                  } else if (threshold == "2013") {
+                  return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2013"]) +"</span>";
+                  }
+              return "<strong>Country: </strong><span class='details'>" + d.properties.name + "<br></span>" + "<strong>Ratio(%): </strong><span class='details'>" + format(d["Ratio_2000"]) +"</span>";
+            })
+
+var margin = {top: 50, right: 0, bottom: 0, left: 900},
+            width = 1330,
+            height = 600;
+            // width = 1330 - margin.left - margin.right,
+            // height = 650 - margin.top - margin.bottom;
+var scale = [0, 20,40,60,80,100];
+var legend_labels = ["0", "20", "40+", "60+", "80+", "NaN"];
+var color = d3.scale.threshold()
+    .domain(scale)
+    .range(["rgb(255, 204, 204)",
+            "rgb(255, 153, 153)",
+            "rgb(255, 102, 102)",
+            "rgb(255, 80, 80)",
+            "rgb(204, 0, 0)",
+            "rgb(153, 51, 51)"]);
+
+var path = d3.geo.path();
+var threshold = 2000;
+
+var svg = d3.select("body")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append('g')
+            .attr('class', 'map');
+
+var projection = d3.geo.mercator()
+                   .scale(130)
+                  .translate( [width / 2, height / 1.5]);
+
+var path = d3.geo.path().projection(projection);
+
+svg.call(tip);
+
+queue()
+    .defer(d3.json, "world_countries.json")
+    .defer(d3.csv, "groupedFAO.csv")
+    .await(ready);
+
+function ready(error, data, ratio) {
+  var populationById = {};
+  console.log("thres:", threshold);
+  if (threshold == "2000") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2000"]; }); 
+      data.features.forEach(function(d) { d["Ratio_2000"] = populationById[d.id]; });
+  } else if (threshold == "2001") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2001"]; });
+      data.features.forEach(function(d) { d["Ratio_2001"] = populationById[d.id]; });
+  } else if (threshold == "2002") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2002"]; });
+      data.features.forEach(function(d) { d["Ratio_2002"] = populationById[d.id]; });     
+    } else if (threshold == "2003") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2003"]; });
+      data.features.forEach(function(d) { d["Ratio_2003"] = populationById[d.id]; });
+    } else if (threshold == "2004") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2004"]; });
+      data.features.forEach(function(d) { d["Ratio_2004"] = populationById[d.id]; });     
+    } else if (threshold == "2005") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2005"]; });
+      data.features.forEach(function(d) { d["Ratio_2005"] = populationById[d.id]; });     
+    } else if (threshold == "2006") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2006"]; });
+      data.features.forEach(function(d) { d["Ratio_2006"] = populationById[d.id]; });     
+    } else if (threshold == "2007") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2007"]; });
+      data.features.forEach(function(d) { d["Ratio_2007"] = populationById[d.id]; });     
+    } else if (threshold == "2008") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2008"]; });
+      data.features.forEach(function(d) { d["Ratio_2008"] = populationById[d.id]; });     
+    } else if (threshold == "2009") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2009"]; });
+      data.features.forEach(function(d) { d["Ratio_2009"] = populationById[d.id]; });     
+    } else if (threshold == "2010") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2010"]; });
+      data.features.forEach(function(d) { d["Ratio_2010"] = populationById[d.id]; });     
+    } else if (threshold == "2011") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2011"]; });
+      data.features.forEach(function(d) { d["Ratio_2011"] = populationById[d.id]; });      
+    } else if (threshold == "2012") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2012"]; });
+      data.features.forEach(function(d) { d["Ratio_2012"] = populationById[d.id]; });      
+    } else if (threshold == "2013") {
+      ratio.forEach(function(d) { populationById[d.id] = +d["Ratio_2013"]; });
+      data.features.forEach(function(d) { d["Ratio_2013"] = populationById[d.id]; });      
+    }
+
+  svg.append("g")
+      .attr("class", "countries")
+    .selectAll("path")
+      .data(data.features)
+    .enter().append("path")
+      .attr("d", path)
+      .style("fill", function(d) { return color(populationById[d.id]); })
+      .style('stroke', 'white')
+      .style('stroke-width', 1.5)
+      .style("opacity",0.8)
+      // tooltips
+        .style("stroke","white")
+        .style('stroke-width', 0.3)
+        .on('mouseover',function(d){
+          tip.show(d);
+
+          d3.select(this)
+            .style("opacity", 1)
+            .style("stroke","white")
+            .style("stroke-width",3);
+        })
+        .on('mouseout', function(d){
+          tip.hide(d);
+
+          d3.select(this)
+            .style("opacity", 0.8)
+            .style("stroke","white")
+            .style("stroke-width",0.3);
+        });
+
+  svg.append("path")
+      .datum(topojson.mesh(data.features, function(a, b) { return a.id !== b.id; }))
+      .attr("class", "names")
+      .attr("d", path);
+    //Adding legend for our Choropleth
+
+  d3.select("input")
+      .on("change", function() {
+        threshold = +d3.select(this).node().value;
+        console.log("thr:", threshold);
+        queue()
+        .defer(d3.json, "world_countries.json")
+        .defer(d3.csv, "groupedFAO.csv")
+        .await(ready);
+
+  });
+
+  var legend = svg.selectAll("g.legend")
+  .data(scale)
+  .enter().append("g")
+  .attr("class", "legend");
+
+  var ls_w = 20, ls_h = 20;
+
+  legend.append("rect")
+  .attr("x", 50)
+  .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
+  .attr("width", ls_w)
+  .attr("height", ls_h)
+  .style("fill", function(d, i) { return color(d); })
+  .style("opacity", 0.8);
+
+  legend.append("text")
+  .attr("x", 80)
+  .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
+  .text(function(d, i){ return legend_labels[i]; });
+}
+function updateTextOutput(val) {
+  document.getElementById('textOutput').value=val;
+  document.getElementById('threshold_val').value="Year: "; 
+}
+</script>
+</body>
+</html>

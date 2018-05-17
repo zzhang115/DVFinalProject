@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<style>
+
+svg {
+  font: 10px sans-serif;
+}
+    /* Tooltip CSS */
+    .d3-tip {
+    line-height: 1.5;
+    font-weight: 400;
+    font-family:"avenir next", Arial, sans-serif;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #66ccff;
+    border-radius: 1px;
+    pointer-events: none;
+    }
+
+    /* Creates a small triangle extender for the tooltip */
+    .d3-tip:after {      
+      box-sizing: border-box;
+      display: inline;
+      font-size: 8px;
+      width: 100%;
+      line-height: 1.5;
+      color: rgba(0, 0, 0, 0.6);
+      position: absolute;
+      pointer-events: none;
+      
+    }
+
+    /* Northward tooltips */
+    .d3-tip.n:after {
+      content: "\25BC";
+      margin: -1px 0 0 0;
+      top: 100%;
+      left: 0;
+      text-align: center;
+    }
+
+    /* Eastward tooltips */
+    .d3-tip.e:after {
+      content: "\25C0";
+      margin: -4px 0 0 0;
+      top: 50%;
+      left: -8px;
+    }
+
+    /* Southward tooltips */
+    .d3-tip.s:after {
+      content: "\25B2";
+      margin: 0 0 1px 0;
+      top: -80px;
+      left: 0;
+      text-align: center;
+    }
+
+    /* Westward tooltips */
+    .d3-tip.w:after {
+      content: "\25B6";
+      margin: -4px 0 0 -1px;
+      top: 50%;
+      left: 100%;
+    }
+
+/*    text{
+      pointer-events:none;
+    }*/
+
+    .details{
+      color:white;
+    }
+</style>
+<body>
+    <h1 align="center">Available Feed For All Countries in 2013</h1>
+
+<svg width="1200" height="600"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="d3-tip.js"></script>
+<script>
+
+var tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function(d) {
+              return "<strong>Country: </strong><span class='details'>" + d.data.id+ "<br></span>" + "<strong>Amount(K tonnes): </strong><span class='details'>" + format(d.value) +"</span>";
+            });
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+svg.call(tip);
+
+var fader = function(color) { return d3.interpolateRgb(color, "#fff")(0.3); },
+    color = d3.scaleOrdinal(d3.schemeCategory20.map(fader)),
+    format = d3.format(",d");
+
+var treemap = d3.treemap()
+    .tile(d3.treemapResquarify)
+    .size([width - 180, height - 0])
+    .round(true)
+    .paddingInner(1);
+
+function feed(d) {
+  // console.log("DDD:", d.FIELD2);
+  return parseInt(d.FIELD2);
+}
+
+d3.json("./convertcsv.json", function(data) {
+  var map = d3.hierarchy(data)
+      .eachBefore(function(d) { 
+        // console.log("d:", d.data.FIELD1);
+        d.data.id = d.data.FIELD1;
+        // console.log("d:", d.data.id);
+
+      })
+      .sum(feed)
+      .sort(function(a, b) {
+        return b.height - a.height || b.value - a.value; 
+      });
+  treemap(map);
+  var g = svg.selectAll("g")
+    .data(map.leaves())
+    .enter().append("g")
+      .attr("transform", function(d) { return "translate(" + (d.x0 + 180) + "," + (d.y0 + 0) + ")"; });
+
+  g.append("rect")
+      .attr("id", function(d) { return d.data.id; })
+      .attr("width", function(d) { 
+        return d.x1  - d.x0; 
+      })
+      .attr("height", function(d) { return d.y1 - d.y0; })
+      .attr("fill", function(d) { return color(d.data.id); })
+        .style("stroke","white")
+        .style('stroke-width', 0.3)
+        .on('mouseover',function(d){
+          tip.show(d);
+
+          d3.select(this)
+            .style("opacity", 1)
+            .style("stroke","white")
+            .style("stroke-width",3);
+        })
+        .on('mouseout', function(d){
+          tip.hide(d);
+
+          d3.select(this)
+            .style("opacity", 0.8)
+            .style("stroke","white")
+            .style("stroke-width",0.3);
+        });
+
+  g.append("clipPath")
+      .attr("id", function(d) { return "clip-" + d.data.id; })
+    .append("use")
+      .attr("xlink:href", function(d) { return "#" + d.data.id; });
+
+  g.append("text")
+      .attr("clip-path", function(d) { return "url(#clip-" + d.data.id + ")"; })
+    .selectAll("tspan")
+      .data(function(d) { return d.data.FIELD1.split(/(?=[A-Z][^A-Z])/g); })
+    .enter().append("tspan")
+      .attr("x", 5)
+      .attr("y", function(d, i) { return 15 + i * 10; })
+      .style("font-size", "13px")
+      .text(function(d) { return d; });
+
+});
+</script>
+</body>
